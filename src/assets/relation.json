@@ -1,0 +1,78 @@
+{
+    "nodes":[{
+        "id":1,
+        "name":"名字1",
+        "x":100,
+        "y":100,
+        "relations":[{
+            "id":2,
+            "arrowType":"circle",
+            "lineType":"solid",
+            "lineDescription":"描述"
+        },{
+            "id":3,
+            "arrowType":"diamond",
+            "lineType":"dashed",
+            "lineDescription":"描述"
+
+        }]
+    },{
+        "id":2,
+        "name":"名字2",
+        "x":100,
+        "y":200,
+        "relations":[{
+            "id":1,
+            "arrowType":"circle",
+            "lineType":"solid",
+            "lineDescription":"描述"
+        },{
+            "id":4,
+            "arrowType":"triangle",
+            "lineType":"dashed",
+            "lineDescription":"描述"
+
+        },{
+            "id":5,
+            "arrowType":"circle",
+            "lineType":"dashed",
+            "lineDescription":"描述"
+        }]
+    },{
+        "id":3,
+        "name":"名字3",
+        "x":100,
+        "y":200,
+        "relations":[{
+            "id":1,
+            "arrowType":"diamond",
+            "lineType":"dashed",
+            "lineDescription":"描述"
+
+        }]
+    },{
+        "id":4,
+        "name":"名字4",
+        "x":100,
+        "y":200,
+        "relations":[{
+            "id":2,
+            "arrowType":"triangle",
+            "lineType":"dashed",
+            "lineDescription":"描述"
+
+        }]
+    },{
+        "id":5,
+        "name":"名字5",
+        "x":100,
+        "y":200,
+        "relations":[{
+            "id":2,
+            "arrowType":"circle",
+            "lineType":"dashed",
+            "lineDescription":"描述"
+
+        }]
+    }]
+}

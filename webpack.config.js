@@ -1,24 +1,25 @@
 const path = require('path');
 
-const ExtractTextPlugin = require("extract-text-webpack-plugin");
+// const ExtractTextPlugin = require("extract-text-webpack-plugin");
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const CopyWebpackPlugin = require('copy-webpack-plugin')
-const HtmlWebpackIncludeAssetsPlugin = require('html-webpack-include-assets-plugin');
-const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+// const CopyWebpackPlugin = require('copy-webpack-plugin')
+// const HtmlWebpackIncludeAssetsPlugin = require('html-webpack-include-assets-plugin');
+// const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 function resolve(dir) {
     return path.join(__dirname, dir)
 }
 module.exports = (mode) => ({
     mode,
     entry: {
-        app:'./src/index.js',
+        app: './src/index.js',
         // vendor:['lodash','plyr','jszip','rxjs']
     },
     output: {
         filename: 'js/[name].[hash].js',
         chunkFilename: 'js/vendor.[hash].js',
         path: path.resolve(__dirname, 'dist'),
-        publicPath: mode === 'development' ? '/' : '/home/'
+        // publicPath: mode === 'development' ? '/' : '/home/'
     },
     resolve: {
         extensions: ['.js', '.jsx', '.json', '.scss'],
@@ -32,16 +33,16 @@ module.exports = (mode) => ({
         },
         symlinks: false
     },
-    optimization:{
+    optimization: {
         splitChunks: {
             cacheGroups: {
                 vendors: {
-                  test: /[\\/]node_modules[\\/]/,
-                  name: 'vendor',
-                  chunks:'all'
+                    test: /[\\/]node_modules[\\/]/,
+                    name: 'vendor',
+                    chunks: 'all'
                 }
-              }
-          }
+            }
+        }
     },
     plugins: [
         // new BundleAnalyzerPlugin(),
@@ -50,6 +51,13 @@ module.exports = (mode) => ({
             template: path.resolve(__dirname, './src/index.html'),
             inject: 'body'
         }),
+        new MiniCssExtractPlugin({
+            // Options similar to the same options in webpackOptions.output
+            // all options are optional
+            filename: 'css/[name].css',
+            chunkFilename: '[id].css',
+            ignoreOrder: false, // Enable to remove warnings about conflicting order
+        }),
         // new CopyWebpackPlugin([
         //     {from: 'lib/*.js', to: './js/', context: './src/'},
         //     {from: 'static_fonts/*.*', to: './fonts/', context: './src/'}],{debug:'debug'}),
@@ -57,20 +65,8 @@ module.exports = (mode) => ({
     module: {
         rules: [
             {
-                test: /\.(eot|svg|ttf|woff|woff2)$/i,
-                exclude: /(static_fonts)/,
-                include:[resolve('src/fonts')],
-                use: [{
-                    loader: 'file-loader',
-                    options: {
-                        name: 'fonts/[name].[hash:5].[ext]',
-                        publicPath: "../"
-                    }
-                }]
-            },
-            {
                 test: /\.css$/,
-                use: ['style-loader', {
+                use: [MiniCssExtractPlugin.loader, {
                     loader: "css-loader",
                     options: {
                         sourceMap: true,
@@ -82,40 +78,15 @@ module.exports = (mode) => ({
             },
             {
                 test: /\.scss$/,
-                include:[resolve('src/scss'),resolve('src/components')],
-                use: ExtractTextPlugin.extract({
-                    fallback: 'style-loader',
-                    use: [{
-                        loader: "css-loader",
-                        options: {
-                            sourceMap: false,
-                            minimize: true, //css压缩
-                            url: true //Enable/Disable url() handling
-                        }
-                    }, {
-                        loader: 'postcss-loader',
-                        options: {
-                            plugins: () => [require('autoprefixer')({
-                                'browsers': ['> 1%', 'last 2 versions','ie 10']
-                            })],
-                        }
-                    }, {
-                        loader: "sass-loader",
-                        options: {
-                            sourceMap: false,
-                            sourceMapContents: false
-                        }
-                    }, {
-                        loader: 'sass-resources-loader',
-                        options: {
-                            sourceMap: false,
-                            resources: ['./src/scss/theme.scss', './src/scss/mixins.scss']
-                        }
-                    }]
-                })
-
-                // use style-loader in development
-                // fallback: "style-loader"
+                include: [resolve('src/scss')],
+                use: [MiniCssExtractPlugin.loader, 'css-loader', {
+                    loader: 'postcss-loader',
+                    options: {
+                        plugins: () => [require('autoprefixer')({
+                            'browsers': ['> 1%', 'last 2 versions', 'ie 10']
+                        })],
+                    }
+                }, 'sass-loader']
             },
 
             // {
@@ -135,8 +106,7 @@ module.exports = (mode) => ({
                 use: {
                     loader: 'babel-loader',
                     options: {
-                        cacheDirectory:true,
-                        presets: ['@babel/preset-env', '@babel/preset-react']
+                        cacheDirectory: true
                     }
                 }
             }

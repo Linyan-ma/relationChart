@@ -1,9 +1,11 @@
 import React from 'react'
-import '@scss/relationWorkSpace.scss'
-class RelationWorkspace extends React.PureComponent{
-    render(){
-        return <><p className="first-page">first page</p></>
+import CssModules from 'react-css-modules'
+
+import realationStyle from '@scss/relationWorkSpace.scss'
+class RelationWorkspace extends React.PureComponent {
+    render() {
+        return <><p styleName="first-page">first page</p></>
     }
 }
 
-export default RelationWorkspace
+export default CssModules(RelationWorkspace, realationStyle)

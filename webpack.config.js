@@ -79,7 +79,14 @@ module.exports = (mode) => ({
             {
                 test: /\.scss$/,
                 include: [resolve('src/scss')],
-                use: [MiniCssExtractPlugin.loader, 'css-loader', {
+                use: [MiniCssExtractPlugin.loader, {
+                    loader: 'css-loader', options: {
+                        importLoaders: 1,
+                        modules: {
+                            localIdentName: "[name]__[local]___[hash:base64:5]",
+                        },	
+                    },
+                }, {
                     loader: 'postcss-loader',
                     options: {
                         plugins: () => [require('autoprefixer')({

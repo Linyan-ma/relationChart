@@ -1,72 +1,74 @@
 {
-    "nodes": [
-        {
-            "id": 1,
-            "name": "1"
-        },
-        {
-            "id": 2,
-            "name": "2"
-        },
-        {
-            "id": 3,
-            "name": "3"
-        },
-        {
-            "id": 4,
-            "name": "4"
-        }
-    ],
-    "relations": [
-        {
-            "id": "r1",
-            "startNode":1,
-            "endNode":2,
-            "relativeX":10,
-            "relativeY":-10,
-            "arrowType":"circle",
-            "lineType":"solid",
-            "lineDescription":"描述"
-        },
-        {
-            "id": "r2",
-            "startNode":1,
-            "endNode":3,
-            "relativeX":10,
-            "relativeY":-10,
-            "arrowType":"circle",
-            "lineType":"solid",
-            "lineDescription":"描述"
-        },
-        {
-            "id": "r3",
-            "startNode":1,
-            "endNode":4,
-            "relativeX":10,
-            "relativeY":-10,
-            "arrowType":"circle",
-            "lineType":"solid",
-            "lineDescription":"描述"
-        },
-        {
-            "id": "r4",
-            "startNode":2,
-            "endNode":3,
-            "relativeX":10,
-            "relativeY":-10,
-            "arrowType":"circle",
-            "lineType":"solid",
-            "lineDescription":"描述"
-        },
-        {
-            "id": "r5",
-            "startNode":2,
-            "endNode":4,
-            "relativeX":10,
-            "relativeY":-10,
-            "arrowType":"circle",
-            "lineType":"solid",
-            "lineDescription":"描述"
-        }
-    ]
+    "line":{
+        "1":"number+px",
+        "2":"solid/dashed",
+        "3":"circle/triangle/diamond"
+    },
+    "data": {
+        "nodes": [
+            {
+                "id": 1,
+                "name": "1"
+            },
+            {
+                "id": 2,
+                "name": "2"
+            },
+            {
+                "id": 3,
+                "name": "3"
+            },
+            {
+                "id": 4,
+                "name": "4"
+            }
+        ],
+        "relations": [
+            {
+                "id": "r1",
+                "snId": 1,
+                "enId": 2,
+                "relativeX": 10,
+                "relativeY": -10,
+                "line": "1px solid triangle",
+                "label": "描述"
+            },
+            {
+                "id": "r2",
+                "snId": 1,
+                "enId": 3,
+                "relativeX": 10,
+                "relativeY": -10,
+                "line": "1px solid triangle",
+                "label": "描述"
+            },
+            {
+                "id": "r3",
+                "snId": 1,
+                "enId": 4,
+                "relativeX": 10,
+                "relativeY": -10,
+                "line": "1px solid triangle",
+                "label": "描述"
+            },
+            {
+                "id": "r4",
+                "snId": 2,
+                "enId": 3,
+                "relativeX": 10,
+                "relativeY": -10,
+                "line": "1px solid triangle",
+                "label": "描述"
+            },
+            {
+                "id": "r5",
+                "snId": 2,
+                "enId": 4,
+                "relativeX": 10,
+                "relativeY": -10,
+                "line": "1px solid triangle",
+                "label": "描述"
+            }
+        ]
+    }
 }

@@ -2,3 +2,15 @@
     color: #ff0000;
     transform: translate(100px 0)
 }
+.operation-btns{
+    position: fixed;
+    right: 5px;
+    top:50%;
+    transform: translateY(-50%);
+    // width: 100%;
+    text-align: center;
+    li{
+        margin-bottom: 10px;
+    }
+
+}

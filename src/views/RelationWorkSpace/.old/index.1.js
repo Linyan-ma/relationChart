@@ -9,24 +9,15 @@ import * as d3 from "d3";
 
 
 import conf from '@configs/chart.config.js'
-import {getRelation} from './services.js'
+import {getRelation} from '../services.js'
 class RelationWorkspace extends React.PureComponent {
-    constructor(props) {
-        super(props)
-        this.dependsNode = []
-        this.dependsLinkAndText = [];
-        this.svg = ''
-    }
-    state = {
-        data: {}
-    }
     _force = () => {
-        let {width, height, chargeStrength, collide, alphaDecay} = conf
+        let {width, height, chargeStrength, collide,alphaDecay} = conf
 
         // 定义一个模拟的力的环境
         return d3.forceSimulation([])
             // simulation.force(name,[force])函数，添加某种力
-            .force("line", d3.forceLink([]).id((d) => (d.id)).distance(300))
+            .force("line", d3.forceLink([]).id((d) => (d.id)).distance(500))
             // Creates a new many-body force with the default parameters.
             .force("charge", d3.forceManyBody().strength(chargeStrength))
             // Creates a new centering force with the specified x- and y- coordinates. If x and y are not specified, they default to ⟨0,0⟩.
@@ -78,7 +69,7 @@ class RelationWorkspace extends React.PureComponent {
             .attr("id", d => d)
             .attr('class', 'arrow')
             .attr("viewBox", "0 -5 10 10")
-            .attr("refX", conf.r + conf.strokeWidth + 10 / Math.sqrt(2))
+            .attr("refX", conf.r+conf.strokeWidth+10/Math.sqrt(2))
             .attr("refY", 0)
             .attr("markerWidth", 10)
             .attr("markerHeight", 16)
@@ -90,81 +81,35 @@ class RelationWorkspace extends React.PureComponent {
 
         return svg;
     }
-    _drag = (force) => {
+    _drag = (force)=>{
         // var _that = this
-        return d3.drag()
-            .on('start', function (d) {
-                d3.event.sourceEvent.stopPropagation();
-                // restart()方法重新启动模拟器的内部计时器并返回模拟器。
-                // 与simulation.alphaTarget或simulation.alpha一起使用时，此方法可用于在交互
-                // 过程中进行“重新加热”模拟，例如在拖动节点时，在simulation.stop暂停之后恢复模拟。
-                // 当前alpha值为0，需设置alphaTarget让节点动起来
-                if (!d3.event.active) force.alphaTarget(0.1).restart();
-                d.fx = d.x;
-                d.fy = d.y;
-            })
-            .on('drag', function (d) {
-                // d.fx属性- 节点的固定x位置
-                // 在每次tick结束时，d.x被重置为d.fx ，并将节点 d.vx设置为零
-                // 要取消节点，请将节点 .fx和节点 .fy设置为空，或删除这些属性。
-                d.fx = d3.event.x;
-                d.fy = d3.event.y;
-            })
-            .on('end', function (d) {
-                // 让alpha目标值值恢复为默认值0,停止力模型
-                if (!d3.event.active) force.alphaTarget(0);
-                d.fx = null;
-                d.fy = null;
-            })
+       return d3.drag()
+        .on('start', function (d) {
+            d3.event.sourceEvent.stopPropagation();
+            // restart()方法重新启动模拟器的内部计时器并返回模拟器。
+            // 与simulation.alphaTarget或simulation.alpha一起使用时，此方法可用于在交互
+            // 过程中进行“重新加热”模拟，例如在拖动节点时，在simulation.stop暂停之后恢复模拟。
+            // 当前alpha值为0，需设置alphaTarget让节点动起来
+            if (!d3.event.active) force.alphaTarget(0.1).restart();
+            d.fx = d.x;
+            d.fy = d.y;
+        })
+        .on('drag', function (d) {
+            // d.fx属性- 节点的固定x位置
+            // 在每次tick结束时，d.x被重置为d.fx ，并将节点 d.vx设置为零
+            // 要取消节点，请将节点 .fx和节点 .fy设置为空，或删除这些属性。
+            d.fx = d3.event.x;
+            d.fy = d3.event.y;
+        })
+        .on('end', function (d) {
+            // 让alpha目标值值恢复为默认值0,停止力模型
+            if (!d3.event.active) force.alphaTarget(0);
+            d.fx = null;
+            d.fy = null;
+        })
     }
-    highlightObject = (obj) => {
-        let _that = this
-        const svg = this.svg
-        console.log(obj)
-        if (obj) {
-            var objIndex = obj.index;
-            _that.dependsNode = _that.dependsNode.concat([objIndex]);
-            _that.dependsLinkAndText = _that.dependsLinkAndText.concat([objIndex]);
-            _that.state.data["links"].forEach(function (lkItem) {
-                if (objIndex == lkItem['source']['index']) {
-                    _that.dependsNode = _that.dependsNode.concat([lkItem.target.index]);
-                } else if (objIndex == lkItem['target']['index']) {
-                    _that.dependsNode = _that.dependsNode.concat([lkItem.source.index]);
-                }
-            });
-
-            // 隐藏节点
-            svg.selectAll('circle').filter(function (d) {
-                return (_that.dependsNode.indexOf(d.index) == -1);
-            }).transition().style('opacity', 0.1);
-            // 隐藏线
-            svg.selectAll('.line').filter(function (d) {
-                // return true;
-                return ((_that.dependsLinkAndText.indexOf(d.source.index) == -1) && (_that.dependsLinkAndText.indexOf(d.target.index) == -1))
-            }).transition().style('opacity', 0.1);
-
-        } else {
-            // 取消高亮
-            // 恢复隐藏的线
-            svg.selectAll('circle').filter(function () {
-                return true;
-            }).transition().style('opacity', 1);
-            // 恢复隐藏的线
-            svg.selectAll('.line').filter(function (d) {
-                // return true;
-                return ((_that.dependsLinkAndText.indexOf(d.source.index) == -1) && (_that.dependsLinkAndText.indexOf(d.target.index) == -1))
-            }).transition().style('opacity', 1);
-            // _that.highlighted = null,
-            _that.dependsNode = [],
-            _that.dependsLinkAndText = [];
-        }
-    };
-
-    _nodes = () => {
-        const {r, strokeWidth,isHighLight} = conf
-        const _that = this
-        const svg = this.svg
-        const {data} = this.state
+    _nodes = (svg, data) => {
+        const {r, strokeWidth} = conf
         // console.log(svg.select('defs'))
         let patterns = svg.select('defs').selectAll("pattern.patternclass")
             .data(data.nodes)
@@ -222,31 +167,34 @@ class RelationWorkspace extends React.PureComponent {
             .on('mouseover', function (d) {
                 d3.select(this).attr('stroke-width', '8');
                 d3.select(this).attr('stroke', '#a3e5f9');
-                if (isHighLight) {
-                    _that.highlightObject(d);
-                }
+                // if (_that.config.isHighLight) {
+                //     _that.highlightObject(d);
+                // }
             })
             .on('mouseout', function (d) {
                 d3.select(this).attr('stroke-width', strokeWidth);
                 d3.select(this).attr('stroke', '#c5dbf0');
-                if (isHighLight) {
-                    _that.highlightObject(null);
-                }
+                // if (_that.config.isHighLight) {
+                //     _that.highlightObject(null);
+                // }
             })
+        // node.attr("cx", function (d) {
+        //     // console.log(d,"nodes:")
+        //     return d.x;
+        // })
+        // .attr("cy", function (d) {
+        //     return d.y;
+        // })
         return node
     }
 
     getDis = (s, t) => {
         return Math.sqrt((s.x - t.x) * (s.x - t.x) + (s.y - t.y) * (s.y - t.y));
     }
-    _lines = () => {
-        const {data} = this.state
-        const svg = this.svg
+    _lines = (svg, data) => {
         //直线
         let line = svg.selectAll("g.line");
-        line = line.data(data["links"], d => {
-            return (`${d["source"]["id"]}_${d["target"]["id"]}`)
-        });
+        line = line.data(data["links"], d => (`${d["source"]["id"]}_${d["target"]["id"]}`));
         line.exit().remove();
         line = line.enter()
             .append("g")
@@ -261,7 +209,7 @@ class RelationWorkspace extends React.PureComponent {
         line.append("path").attr("class", "links")
             .attr("d", d => {return "M" + conf.r + "," + 0 + " L" + this.getDis(d.source, d.target) + ",0";})
             .style("marker-end", "url(#end-arrow)")
-            .attr("refX", conf.r)
+            .attr("refX",conf.r)
             .attr('stroke', conf.linkColor);
         // 线上的描述语
         let group = line.append("g").attr("class", "rect_g")
@@ -276,11 +224,9 @@ class RelationWorkspace extends React.PureComponent {
             .attr("x", 40)
             .attr("y", 5)
             .attr("text-anchor", "middle")  // <text>文本中轴对齐方式居中  start | middle | end
-            .style("font-size", 12).text(d => {
-                console.log(d)
-                return d.relation
-            });
+            .style("font-size", 12).text(d => {return d.name});
         // line.attr('class','testttt')
+        console.log(line)
         return line;
     }
     getTransform(source, target, _dis) {
@@ -336,7 +282,7 @@ class RelationWorkspace extends React.PureComponent {
 
         // 7.4 修改线中装文本矩形rect的位置
         line.select('.rect_g').select('rect')
-            .attr("x", function (d) {
+            .attr("x", function(d) {
                 // console.log(d3.select(this).node())
                 // console.log(_app.getDis(d.source, d.target))
 
@@ -351,50 +297,34 @@ class RelationWorkspace extends React.PureComponent {
             return d.y;
         })
     };
-    _bindEvent = ()=>{
-
-    }
-    _bindLinkAndNodeEvent = ()=>{
-        
-    }
     componentDidMount() {
-        const {linkDistance} = conf
         getRelation(1).then(res => {
             let data = res.data
-            this.setState({
-                data
-            },()=>{
-                this.svg = this._svg('graph-area')
-                let force = this._force()
-                var update = () => {
-                    //转换数据
-                    force.nodes(data["nodes"]);
-                    // force.links(data["links"])
-                    force.force("link", d3.forceLink(data["links"]).id(d => d.id).distance(linkDistance));
-                    //生成节点连接线
-                    let line = this._lines();
-    
-                    let node = this._nodes();
-                    // let linetext = _linetext(data, svg);
-                    // let bindEvent = _bindEvent(data, update, svg, force, node, line);
-                    // let bindLinkAndNodeEvent = _bindLinkAndNodeEvent(data, update, svg, node, line);
-                    node.call(this._drag(force));//绑定拖拽
-                    force.on('tick', () => (this._tick(line, node)))
-                }
-                update()
-            })
- 
+            let svg = this._svg('graph-area')
+            let force = this._force()
+            var update = () => {
+                //转换数据
+                force.nodes(data["nodes"]);
+                // force.links(data["links"])
+                force.force("link", d3.forceLink(data["links"]).distance(400));
+                //生成节点连接线
+                let line = this._lines(svg, data);
+
+                let node = this._nodes(svg, data);
+
+
+                // let linetext = _linetext(data, svg);
+                // let bindEvent = _bindEvent(data, update, svg, force, node, line);
+                // let bindLinkAndNodeEvent = _bindLinkAndNodeEvent(data, update, svg, node, line);
+                node.call(this._drag(force));//绑定拖拽
+                force.on('tick', () => (this._tick(line, node)))
+            }
+            update()
         })
     }
     render() {
         return <>
-        <ul styleName="operation-btns">
-            <li className="button">添加节点</li>
-            <li className="button">添加线</li>
-            <li className="button">删除节点</li>
-            <li className="button">删除线</li>
-        </ul>
-            
+            <p styleName="first-page">first page</p>
             <div id="graph-area"></div>
         </>
     }

@@ -2,7 +2,7 @@ const webpack = require('webpack')
 const merge = require('webpack-merge');
 const common = require('./webpack.config.js');
 
-// const ExtractTextPlugin = require("extract-text-webpack-plugin");
+const CopyWebpackPlugin = require("copy-webpack-plugin");
 
 module.exports = (env,options)=>{    
     return merge(common('development'), {
@@ -24,7 +24,7 @@ module.exports = (env,options)=>{
                 }
             }),
             new webpack.HotModuleReplacementPlugin(),
-            // new CopyWebpackPlugin([ {from:'data/*.json',to:'./',context: './src/'}], {debug:'debug'}),
+            new CopyWebpackPlugin([ {from:'assets/*.json',to:'./',context: './src/'}], {debug:'debug'}),
             // new ExtractTextPlugin({
             //     filename: './css/[name].css'
             // }),

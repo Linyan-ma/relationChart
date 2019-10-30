@@ -67,11 +67,14 @@ module.exports = (mode) => ({
             {
                 test: /\.css$/,
                 use: [MiniCssExtractPlugin.loader, {
-                    loader: "css-loader",
+                    loader: "css-loader"
+                },
+                {
+                    loader: 'postcss-loader',
                     options: {
-                        sourceMap: true,
-                        minimize: true, //css压缩
-                        url: true //Enable/Disable url() handling
+                        plugins: () => [require('autoprefixer')({
+                            'overrideBrowserslist': ['> 1%', 'last 2 versions', 'ie 10']
+                        })],
                     }
                 }
                 ]
@@ -84,13 +87,13 @@ module.exports = (mode) => ({
                         importLoaders: 1,
                         modules: {
                             localIdentName: "[name]__[local]___[hash:base64:5]",
-                        },	
+                        },
                     },
                 }, {
                     loader: 'postcss-loader',
                     options: {
                         plugins: () => [require('autoprefixer')({
-                            'browsers': ['> 1%', 'last 2 versions', 'ie 10']
+                            'overrideBrowserslist': ['> 1%', 'last 2 versions', 'ie 10']
                         })],
                     }
                 }, 'sass-loader']

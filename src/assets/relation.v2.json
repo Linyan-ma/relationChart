@@ -23,11 +23,11 @@
                 "name": "4"
             }
         ],
-        "relations": [
+        "links": [
             {
                 "id": "r1",
-                "snId": 1,
-                "enId": 2,
+                "source": 1,
+                "target": 2,
                 "relativeX": 10,
                 "relativeY": -10,
                 "line": "1px solid triangle",
@@ -35,8 +35,8 @@
             },
             {
                 "id": "r2",
-                "snId": 1,
-                "enId": 3,
+                "source": 1,
+                "target": 3,
                 "relativeX": 10,
                 "relativeY": -10,
                 "line": "1px solid triangle",
@@ -44,8 +44,8 @@
             },
             {
                 "id": "r3",
-                "snId": 1,
-                "enId": 4,
+                "source": 1,
+                "target": 4,
                 "relativeX": 10,
                 "relativeY": -10,
                 "line": "1px solid triangle",
@@ -53,8 +53,8 @@
             },
             {
                 "id": "r4",
-                "snId": 2,
-                "enId": 3,
+                "source": 2,
+                "target": 3,
                 "relativeX": 10,
                 "relativeY": -10,
                 "line": "1px solid triangle",
@@ -62,8 +62,8 @@
             },
             {
                 "id": "r5",
-                "snId": 2,
-                "enId": 4,
+                "source": 2,
+                "target": 4,
                 "relativeX": 10,
                 "relativeY": -10,
                 "line": "1px solid triangle",

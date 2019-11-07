@@ -7,13 +7,25 @@ html,body{
   height: 100%;
 }
 .button {
+  list-style: none;
   width: 120px;
   height: 36px;
   line-height: 36px;
   font-size: 16px;
   text-align: center;
-  color: #ffffff;
-  background: #00a0e8;
+  color: #000000;
+  background: #ffffff;
+  border: 1px solid #cccccc;
   border-radius: 3px;
   cursor: pointer;
+
+}
+.button.selected{
+  color: #ffffff;
+  background: #00a0e8;
+}
+/* d3 class */
+.node.selected{
+  stroke:#00c4ff;
+  stroke-width:8;
 }

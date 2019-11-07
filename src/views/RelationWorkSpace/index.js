@@ -16,9 +16,11 @@ class RelationWorkspace extends React.PureComponent {
         this.dependsNode = []
         this.dependsLinkAndText = [];
         this.svg = ''
+        this.data = {}
+        this.dragable = false
     }
     state = {
-        data: {}
+        curBtn: '',
     }
     _force = () => {
         let {width, height, chargeStrength, collide, alphaDecay} = conf
@@ -120,12 +122,11 @@ class RelationWorkspace extends React.PureComponent {
     highlightObject = (obj) => {
         let _that = this
         const svg = this.svg
-        console.log(obj)
         if (obj) {
             var objIndex = obj.index;
             _that.dependsNode = _that.dependsNode.concat([objIndex]);
             _that.dependsLinkAndText = _that.dependsLinkAndText.concat([objIndex]);
-            _that.state.data["links"].forEach(function (lkItem) {
+            _that.data["links"].forEach(function (lkItem) {
                 if (objIndex == lkItem['source']['index']) {
                     _that.dependsNode = _that.dependsNode.concat([lkItem.target.index]);
                 } else if (objIndex == lkItem['target']['index']) {
@@ -156,7 +157,7 @@ class RelationWorkspace extends React.PureComponent {
             }).transition().style('opacity', 1);
             // _that.highlighted = null,
             _that.dependsNode = [],
-            _that.dependsLinkAndText = [];
+                _that.dependsLinkAndText = [];
         }
     };
 
@@ -164,15 +165,13 @@ class RelationWorkspace extends React.PureComponent {
         const {r, strokeWidth,isHighLight} = conf
         const _that = this
         const svg = this.svg
-        const {data} = this.state
-        // console.log(svg.select('defs'))
+        const data = this.data
         let patterns = svg.select('defs').selectAll("pattern.patternclass")
             .data(data.nodes)
             .enter()
             .append("pattern")
             .attr("class", "patternclass")
             .attr("id", function (d, index) {
-                // console.log(d.role_id)
                 return 'avatar' + d.id;
             })
             // 两个取值userSpaceOnUse  objectBoundingBox
@@ -185,10 +184,12 @@ class RelationWorkspace extends React.PureComponent {
         patterns.append("image")
             .attr("class", "circle")
             .attr("xlink:href", function (d) {
-                return "https://static.linkeddb.com/m/images/none.jpg"; // 修改节点头像
+                // console.log(d)
+                // d.avatar ||
+                return  "https://static.linkeddb.com/m/images/none.jpg"; // 修改节点头像
             })
             .attr("src", function (d) {
-                return "https://static.linkeddb.com/m/images/none.jpg"; // 修改节点头像
+                return  "https://static.linkeddb.com/m/images/none.jpg"; // 修改节点头像
             })
             .attr("height", r * 2)
             .attr("width", r * 2)
@@ -205,13 +206,13 @@ class RelationWorkspace extends React.PureComponent {
                 return d.name;
             });
         // 加入svg
-        let node = svg.selectAll("g.node");
-        node = node.data(data["nodes"], d => (d["id"]));
-        // node.exit().remove();
-        node = node.enter().append("circle")
-            .attr("class", "circleclass")
-            .style("cursor", "pointer")
+        let node = svg.selectAll("circle.node");
+        node = node.data(data["nodes"], d => {(d["id"])});
+        node.exit().remove();
 
+        node = node.enter().append("circle")
+            .attr("class", d => d.isNew ? 'new-node node' : "node")
+            .style("cursor", "pointer")
             .attr("fill", function (d) {
                 return ("url(#avatar" + d.id + ")");
             })
@@ -222,15 +223,23 @@ class RelationWorkspace extends React.PureComponent {
             .on('mouseover', function (d) {
                 d3.select(this).attr('stroke-width', '8');
                 d3.select(this).attr('stroke', '#a3e5f9');
-                if (isHighLight) {
+                
+                if (isHighLight&&_that.state.curBtn !== 'J_AddLine') {
                     _that.highlightObject(d);
                 }
             })
             .on('mouseout', function (d) {
                 d3.select(this).attr('stroke-width', strokeWidth);
                 d3.select(this).attr('stroke', '#c5dbf0');
-                if (isHighLight) {
+                if (isHighLight&&_that.state.curBtn !== 'J_AddLine') {
                     _that.highlightObject(null);
+                }
+            }).on('click',function(d){
+
+                if (this.classList.contains('selected')) {
+                    d3.select(this).classed('selected', false);
+                } else {
+                    d3.select(this).classed('selected', true);
                 }
             })
         return node
@@ -240,23 +249,30 @@ class RelationWorkspace extends React.PureComponent {
         return Math.sqrt((s.x - t.x) * (s.x - t.x) + (s.y - t.y) * (s.y - t.y));
     }
     _lines = () => {
-        const {data} = this.state
+        const data = this.data
         const svg = this.svg
         //直线
         let line = svg.selectAll("g.line");
+
         line = line.data(data["links"], d => {
             return (`${d["source"]["id"]}_${d["target"]["id"]}`)
         });
         line.exit().remove();
+
+        console.log("g.line", line)
         line = line.enter()
             .append("g")
             .attr("class", "line")
+            .merge(line)
             .on('mouseover', function () {
                 d3.select(this).selectAll('path.links').attr('stroke-width', 4);
             })
             .on('mouseout', function () {
                 d3.select(this).selectAll('path.links').attr('stroke-width', 1);
             })
+
+        line.selectAll(".links").remove();
+        line.selectAll(".rect_g").remove();
         // 5.2 添加线
         line.append("path").attr("class", "links")
             .attr("d", d => {return "M" + conf.r + "," + 0 + " L" + this.getDis(d.source, d.target) + ",0";})
@@ -277,7 +293,6 @@ class RelationWorkspace extends React.PureComponent {
             .attr("y", 5)
             .attr("text-anchor", "middle")  // <text>文本中轴对齐方式居中  start | middle | end
             .style("font-size", 12).text(d => {
-                console.log(d)
                 return d.relation
             });
         // line.attr('class','testttt')
@@ -307,12 +322,17 @@ class RelationWorkspace extends React.PureComponent {
     // tick心跳函数
     _tick = (line, node) => {
         var _app = this
+        // console.log("tick tok",line)
         // 7.1 修改每条容器edge的位置
         line.attr("transform", (d) => {
             return this.getTransform(d.source, d.target, this.getDis(d.source, d.target))
         });
+        console.log()
         // 7.2 修改每条线link位置
-        line.select('.links').attr("d", d => {return "M" + conf.r + "," + 0 + " L" + this.getDis(d.source, d.target) + ",0";})
+        line.selectAll('.links').attr("d", d => {
+            // console.log(d.source)
+            return "M" + conf.r + "," + 0 + " L" + this.getDis(d.source, d.target) + ",0";
+        })
 
         // 7.3 修改线中关系文字text的位置 及 文字的反正
         line.select('.rect_g').select('text')
@@ -322,6 +342,7 @@ class RelationWorkspace extends React.PureComponent {
                 // var width = bbox.width;
                 // $(this).prev('rect').attr('width', width + 10);
                 // // 7.3.2 更新 text 的位置
+                // console.log(this.getDis(d.source, d.target) / 2)
                 return this.getDis(d.source, d.target) / 2
             })
             .attr("transform", (d) => {
@@ -337,64 +358,129 @@ class RelationWorkspace extends React.PureComponent {
         // 7.4 修改线中装文本矩形rect的位置
         line.select('.rect_g').select('rect')
             .attr("x", function (d) {
-                // console.log(d3.select(this).node())
-                // console.log(_app.getDis(d.source, d.target))
-
                 return _app.getDis(d.source, d.target) / 2 - 20
             })    // x 坐标为两点中心距离减去自身长度一半
-        // console.log(node.attr,"000")
         // 5.修改节点的位置
         node.attr("cx", function (d) {
-            // console.log("node:",d)
             return d.x;
         }).attr("cy", function (d) {
             return d.y;
         })
     };
-    _bindEvent = ()=>{
+    _bindEvent = (node, line, update) => {
+        var svg = this.svg
+        var _that = this
+        d3.select('#J_AddLine').on('click', function () {
+            let mousedownNode = null,
+                mouseupNode = null;
+            let dragLine = svg.append("line").attr("class", "drag-line");
+            node.on('mousedown.node', function (d) {
+                mousedownNode = d
+                dragLine.attr("class", "drag-line")
+                    .lower()
+                    .attr("x1", d["x"])
+                    .attr("y1", d["y"])
+                    .attr("x2", d["x"])
+                    .attr("y2", d["y"]);
+                d3.event.stopPropagation();
+            }).on('mouseup.node',function(d){
+
+            })
+        })
+
+        d3.select('#J_AddNode').on('click', function () {
+            _that.addNode()
+        })
+        d3.select('#J_DelNode').on('click', function () {
+            _that.delNode()
+        })
+    }
+    _bindLinkAndNodeEvent = (node, line, update) => {
+        node
+    }
+    checkIsolateNode = ()=>{
 
     }
-    _bindLinkAndNodeEvent = ()=>{
-        
+    delNode = ()=>{
+        let selectedNodes = d3.selectAll('.node.selected').data()
+        let selectedNodes_ids = selectedNodes.map(v=>v.id)
+        let data_nodes = this.data["nodes"].filter((d,i)=>{
+            return selectedNodes_ids.indexOf(d.id)==-1
+        })
+        console.log(selectedNodes_ids)
+        let data_links = this.data["links"].filter((d,i)=>{
+        //    console.log(d.source.id,selectedNodes_ids)
+        //    console.log(d.target.id,selectedNodes_ids)
+            console.log(d.source.id,d.target.id)
+            // console.log(selectedNodes_ids.indexOf(d.target.id))
+            console.log(selectedNodes_ids.indexOf(d.source.id)==-1,selectedNodes_ids.indexOf(d.target.id)==-1)
+           return selectedNodes_ids.indexOf(d.source.id)==-1&&selectedNodes_ids.indexOf(d.target.id)==-1
+            // d.source.id
+        })
+        // console.log(this.data["links"])
+        // console.log(data_links)
+
+        this.data["nodes"] = data_nodes
+        this.data["links"] = data_links
+        console.log(this.data["links"])
+
+        this.updateData(this.data)
     }
+    addNode = () => {
+        var new_node = {
+            "name": "未命名",
+            "id": 101,
+            "avatar": "https://static.linkeddb.com/m/images/none.jpg",
+            "isNew": true
+        }
+        this.data["nodes"].push(new_node)
+        this.updateData(this.data)
+    }
+
     componentDidMount() {
-        const {linkDistance} = conf
         getRelation(1).then(res => {
             let data = res.data
-            this.setState({
-                data
-            },()=>{
-                this.svg = this._svg('graph-area')
-                let force = this._force()
-                var update = () => {
-                    //转换数据
-                    force.nodes(data["nodes"]);
-                    // force.links(data["links"])
-                    force.force("link", d3.forceLink(data["links"]).id(d => d.id).distance(linkDistance));
-                    //生成节点连接线
-                    let line = this._lines();
-    
-                    let node = this._nodes();
-                    // let linetext = _linetext(data, svg);
-                    // let bindEvent = _bindEvent(data, update, svg, force, node, line);
-                    // let bindLinkAndNodeEvent = _bindLinkAndNodeEvent(data, update, svg, node, line);
-                    node.call(this._drag(force));//绑定拖拽
-                    force.on('tick', () => (this._tick(line, node)))
-                }
-                update()
-            })
- 
+            this.svg = this._svg('graph-area')
+            this.force = this._force()
+            this.data = data
+            this.force.alphaTarget(.1).restart();
+            // this.force.restart();
+            this.updateData(data)
+
+        })
+    }
+    updateData = (data) => {
+        const {linkDistance} = conf
+        let force = this.force
+
+        // this.force.alphaTarget()
+        //转换数据
+        force.nodes(data["nodes"]);
+        // force.links(data["links"])
+        force.force("link", d3.forceLink(data["links"]).id(d => d.id).distance(linkDistance));
+        //生成节点连接线
+        let line = this._lines();
+        let node = this._nodes();
+        // let linetext = _linetext(data, svg);
+        let bindEvent = this._bindEvent(node, line);
+        // let bindLinkAndNodeEvent = _bindLinkAndNodeEvent(node, line,update);
+        // node.call(this._drag(force));//绑定拖拽
+        force.on('tick', () => (this._tick(line, node)))
+    }
+    selectBtn = (e) => {
+        this.setState({
+            curBtn: e.target.id
         })
     }
     render() {
         return <>
-        <ul styleName="operation-btns">
-            <li className="button">添加节点</li>
-            <li className="button">添加线</li>
-            <li className="button">删除节点</li>
-            <li className="button">删除线</li>
-        </ul>
-            
+            <ul styleName="operation-btns">
+                <li className={`button ${this.state.curBtn == "J_AddNode" ? 'selected' : ''}`} id="J_AddNode" onClick={(e) => this.selectBtn(e)}>添加节点</li>
+                <li className={`button ${this.state.curBtn == "J_AddLine" ? 'selected' : ''}`} id="J_AddLine" onClick={(e) => this.selectBtn(e)}>添加线</li>
+                <li className={`button ${this.state.curBtn == "J_DelNode" ? 'selected' : ''}`} id="J_DelNode" onClick={(e) => this.selectBtn(e)}>删除节点</li>
+                {/* <li className={`button ${this.state.curBtn == "J_DelLine" ? 'selected' : ''}`} id="J_DelLine" onClick={(e) => this.selectBtn(e)}>删除线</li> */}
+            </ul>
+
             <div id="graph-area"></div>
         </>
     }

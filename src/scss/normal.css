@@ -29,3 +29,14 @@ html,body{
   stroke:#00c4ff;
   stroke-width:8;
 }
+
+#graph-area .drag-line{
+  stroke-width:1px;
+  stroke:#5bc0de;
+  cursor: crosshair;  
+
+}
+#graph-area .drag-line-hidden{
+  stroke-width:0; 
+  cursor: crosshair;  
+}

@@ -10,7 +10,7 @@ module.exports = (env,options)=>{
         devServer: {
             contentBase: "/",
             open: true,
-            port: 8090,
+            port: 8070,
             inline: true,
             hot: true,
             // host: '0.0.0.0',

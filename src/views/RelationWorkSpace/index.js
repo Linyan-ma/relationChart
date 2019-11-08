@@ -18,7 +18,11 @@ class RelationWorkspace extends React.PureComponent {
         this.svg = ''
         this.data = {}
         this.dragable = false
+        // this.id = 1
     }
+    // uid = ()=>{
+    //     return ''
+    // }
     state = {
         curBtn: '',
     }
@@ -166,6 +170,9 @@ class RelationWorkspace extends React.PureComponent {
         const _that = this
         const svg = this.svg
         const data = this.data
+
+        svg.select('defs').selectAll("pattern.patternclass").remove();
+
         let patterns = svg.select('defs').selectAll("pattern.patternclass")
             .data(data.nodes)
             .enter()
@@ -259,7 +266,6 @@ class RelationWorkspace extends React.PureComponent {
         });
         line.exit().remove();
 
-        console.log("g.line", line)
         line = line.enter()
             .append("g")
             .attr("class", "line")
@@ -327,7 +333,6 @@ class RelationWorkspace extends React.PureComponent {
         line.attr("transform", (d) => {
             return this.getTransform(d.source, d.target, this.getDis(d.source, d.target))
         });
-        console.log()
         // 7.2 修改每条线link位置
         line.selectAll('.links').attr("d", d => {
             // console.log(d.source)
@@ -373,8 +378,10 @@ class RelationWorkspace extends React.PureComponent {
         d3.select('#J_AddLine').on('click', function () {
             let mousedownNode = null,
                 mouseupNode = null;
+                // svg.selectAll('line').remove()
             let dragLine = svg.append("line").attr("class", "drag-line");
             node.on('mousedown.node', function (d) {
+                console.log(d)
                 mousedownNode = d
                 dragLine.attr("class", "drag-line")
                     .lower()
@@ -384,8 +391,55 @@ class RelationWorkspace extends React.PureComponent {
                     .attr("y2", d["y"]);
                 d3.event.stopPropagation();
             }).on('mouseup.node',function(d){
+                mouseupNode = d
+                if (mousedownNode) {
+                    mouseupNode = d;
+                    if (mouseupNode == mousedownNode) { mousedownNode = null;
+                        mouseupNode = null; return; }
+                    let link = { source: mousedownNode, target: mouseupNode };
 
+                    let lines = _that.data["links"]
+                    let hasLink = lines.findIndex(function(linkItem) { return linkItem.source.id == mousedownNode.id && linkItem.target.id == mouseupNode.id }) > -1;
+                    let hasOppositeLink = lines.findIndex(function(linkItem) { return linkItem.source.id == mouseupNode.id && linkItem.target.id == mousedownNode.id }) > -1;
+                    if (!hasLink) {
+                        //如果是反向边 则合并为一条双向边  
+                        if (hasOppositeLink) {
+                            lines.forEach(function(linkItem) {
+                                linkItem.source.id == mouseupNode.id && linkItem.target.id == mousedownNode.id && (linkItem["isTwoWay"] = true);
+                            });
+                        } else {
+                            lines.push(link);
+                        }
+
+                        _that.updateData(_that.data);
+                    } else {
+                        alert("已经有连线了，不能重复添加！")
+                    }
+                }
             })
+
+            d3.select("#graph-area")
+            .on("mousedown.node", function() {
+                if (!mousedownNode) return;
+            })
+            .on('mousemove.node', function() {
+                if (!mousedownNode) return;
+                // let { translate, scale } = util.getTranslateAndScale();
+                let [x, y] = d3.mouse(this);
+                console.log(x,y)
+                dragLine.attr("x1", mousedownNode["x"])
+                    .attr("y1", mousedownNode["y"])
+                    .attr("x2", x)
+                    .attr("y2", y);
+                d3.event.preventDefault();
+            })
+            .on("mouseup.node", function() {
+                if (mousedownNode) {
+                    dragLine.attr("class", "drag-line-hidden")
+                }
+                mousedownNode = null;
+                mouseupNode = null;
+            });
         })
 
         d3.select('#J_AddNode').on('click', function () {
@@ -407,22 +461,13 @@ class RelationWorkspace extends React.PureComponent {
         let data_nodes = this.data["nodes"].filter((d,i)=>{
             return selectedNodes_ids.indexOf(d.id)==-1
         })
-        console.log(selectedNodes_ids)
         let data_links = this.data["links"].filter((d,i)=>{
-        //    console.log(d.source.id,selectedNodes_ids)
-        //    console.log(d.target.id,selectedNodes_ids)
-            console.log(d.source.id,d.target.id)
-            // console.log(selectedNodes_ids.indexOf(d.target.id))
-            console.log(selectedNodes_ids.indexOf(d.source.id)==-1,selectedNodes_ids.indexOf(d.target.id)==-1)
            return selectedNodes_ids.indexOf(d.source.id)==-1&&selectedNodes_ids.indexOf(d.target.id)==-1
-            // d.source.id
+
         })
-        // console.log(this.data["links"])
-        // console.log(data_links)
 
         this.data["nodes"] = data_nodes
         this.data["links"] = data_links
-        console.log(this.data["links"])
 
         this.updateData(this.data)
     }
